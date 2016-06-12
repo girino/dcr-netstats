@@ -1,0 +1,18 @@
+//- index.jade
+extends ./layout.jade
+
+block content
+
+  div.container-fixed(ng-controller='StatsCtrl', role="main", style="width:728px;background-color:#333333;")
+    div.row(ng-cloak)
+      div.col-xs-4.stat-holder(style="width: 200px; height: 110px;background-color:#333333;")
+        div.big-info.bestblock(class="text-{{ widgetClass }}")
+          div.pull-left.icon-full-width
+            i.icon-gasprice
+          div.big-details-holder
+            span.small-title recomended action
+            span.smaller-text {{ marketadvice }}
+          div.clearfix
+      div.col-xs-8.stat-holder(style="height: 110px;background-color:#333333;")
+        div.big-info.bestblock(class="text-{{ widgetClass }}")
+          div.alert(class="alert-{{ widgetClass }}") Current price of {{ (bestStats.block.sbits).toString().substr(0,5) }} DCR is {{ comparator }} average of {{ (avgTicketPrice).toString().substr(0,5) }} DCR and is expected to {{ riseorlower }} to {{ (estimateexpected).toString().substr(0,5) }} DCR in {{ 144 - bestStats.block.height % 144 }} blocks.

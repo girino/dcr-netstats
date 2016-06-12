@@ -30,6 +30,7 @@ netStatsApp.controller('StatsCtrl', function($scope, $filter, $localStorage, soc
 	$scope.estimatemin = 0;
 	$scope.estimatemax = 0;
 	$scope.estimateexpected = 0;
+	$scope.marketadvice = '...';
 
 	//$scope.lastGasLimit = _.fill(Array(MAX_BINS), 2);
 	$scope.lastBlocksTime = _.fill(Array(MAX_BINS), 2);
@@ -146,7 +147,7 @@ netStatsApp.controller('StatsCtrl', function($scope, $filter, $localStorage, soc
 
 				if( $scope.nodes.length > 0 )
 				{
-					toastr['success']("Got nodes list", "Got nodes!");
+					//toastr['success']("Got nodes list", "Got nodes!");
 
 					updateBestBlock();
 				}
@@ -294,8 +295,6 @@ netStatsApp.controller('StatsCtrl', function($scope, $filter, $localStorage, soc
 
 				if( !_.isEqual($scope.avgHashrate, data.avgHashrate) )
 					$scope.avgHashrate = data.avgHashrate;
-				console.log(data.avgHashrate);
-				console.log(data.networkhashps);
 
 
 				if( !_.isEqual($scope.lastBlocksTime, data.blocktime) && data.blocktime.length >= MAX_BINS ) 
@@ -323,8 +322,7 @@ netStatsApp.controller('StatsCtrl', function($scope, $filter, $localStorage, soc
 				$scope.stakeReward = ($scope.blockReward) * 0.06;
 				
 				// stake info
-				$scope.poolsize = data.poolsize;
-				var lastPoolsize = data.poolsize.slice(-1)[0];
+				var lastPoolsize = $scope.bestStats.block.poolsize
 				$scope.printablePoolSize = Math.round(lastPoolsize).toString().replace(/(\d)(?=(\d\d\d)+([^\d]|$))/g, '$1 ');
 				$scope.allmempooltix = data.allmempooltix;
 				$scope.estimatemin = data.estimatemin;
@@ -332,7 +330,30 @@ netStatsApp.controller('StatsCtrl', function($scope, $filter, $localStorage, soc
 				$scope.estimateexpected = data.estimateexpected;
 				$scope.avgTicketPrice = data.locked / lastPoolsize;
 				
+				var currPrice = $scope.bestStats.block.sbits;
+				var nextPrice = $scope.estimateexpected;
+				var avgPrice = $scope.avgTicketPrice;
+				var pricePlusDelta = avgPrice * 1.25;
 
+				$scope.riseorlower = (currPrice > nextPrice) ? "lower" : "rise";
+				if ((currPrice > nextPrice) || (currPrice > pricePlusDelta)) {
+					$scope.marketadvice = "WAIT";
+					$scope.widgetClass = 'danger';
+				} else if (currPrice > avgPrice) {
+					$scope.marketadvice = "WATCH";
+					$scope.widgetClass = 'info';
+				} else {
+					$scope.marketadvice = "BUY";
+					$scope.widgetClass = 'success';
+				}
+				if (currPrice > pricePlusDelta) {
+					$scope.comparator = 'greater than';
+				} else if (currPrice > avgPrice) {
+					$scope.comparator = 'slightly greater than';
+				} else {
+					$scope.comparator = 'less than';
+				}
+					
 				break;
 
 			case "inactive":

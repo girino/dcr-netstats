@@ -85,7 +85,8 @@ module.exports = function(grunt) {
 					}
 				},
 				files: {
-					'dist/index.html': 'src/views/index.jade'
+					'dist/index.html': 'src/views/index.jade',
+					'dist/widget.html': 'src/views/widget.jade'
 				}
 			},
 			build_lite: {
@@ -96,7 +97,8 @@ module.exports = function(grunt) {
 					}
 				},
 				files: {
-					'dist-lite/index.html': 'src-lite/views/index.jade'
+					'dist-lite/index.html': 'src-lite/views/index.jade',
+					'dist-lite/widget.html': 'src-lite/views/widget.jade'
 				}
 			}
 		},
