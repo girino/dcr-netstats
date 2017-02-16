@@ -23,6 +23,9 @@ var api;
 var client;
 var server;
 
+// utilities to send all data to the pool to be processed locally)
+var isPoolClient = false;
+
 // Init Client Socket connection
 client = new Primus(server, {
 	transformer: 'websockets',
@@ -142,7 +145,10 @@ var connect = function() {
 
 	    /* Get New Block by hash */
 	    if (data.params) {
-	    	ws.send('{"jsonrpc":"1.0","id":"getblock","method":"getblock","params":["'+data.params[0]+'"]}', function(err) {
+		console.log('Received notifyblocks');
+		// params are not what i expected, getting best block instead
+		ws.send('{"jsonrpc":"1.0","id":"getbestblock","method":"getbestblock","params":[]}', function(err) {
+	    	//ws.send('{"jsonrpc":"1.0","id":"getblock","method":"getblock","params":["'+data.params[0]+'"]}', function(err) {
 					if (err) {
 						console.log('Socket error: ' + err);
 					}
@@ -152,6 +158,10 @@ var connect = function() {
 
 		var result = data.result;
 
+		// for use in the pool, just redirect messages "as is"
+                if (isPoolClient) {
+                    client.write({action: 'rawmsg', data: data});
+                }
 		if (result && data.id && data.id == 'getbestblock') {
 			// requests last block
 	    	ws.send('{"jsonrpc":"1.0","id":"getblock","method":"getblock","params":["'+result.hash+'"]}', function(err) {
@@ -175,7 +185,10 @@ var connect = function() {
 	      updateSupply(result);
 	    } else if (result && data.id && data.id == 'getticketpoolvalue' ) {
 	      updateLocked(result);
-	    }
+	    } else {
+		console.log(result);
+		console.log(data);
+		}
 	});
 	ws.on('error', function(derp) {
 	  console.log('ERROR:' + derp);
@@ -215,6 +228,20 @@ client.on('connection', function (clientSpark)
 
 		clientSpark.emit('client-latency', { latency: latency });
 	});
+
+     clientSpark.on('data', function (data) {
+    	console.log('received data from the client', data);
+    	console.log(_.get(data, 'action'));
+	if (_.get(data, 'action') == "get-init") {
+		console.log("get-init = ", (_.get(data, 'action')));
+		isPoolClient = true;
+		ws.send('{"jsonrpc":"1.0","id":"getbestblock","method":"getbestblock","params":[]}', function(err) {});
+	  	ws.send('{"jsonrpc":"1.0","id":"getmininginfo","method":"getmininginfo","params":[]}', function(err) {});
+	 	ws.send('{"jsonrpc":"1.0","id":"estimatestakediff","method":"estimatestakediff","params":[]}', function(err) {});
+	
+	}
+     });
+
 });
 
 var latencyTimeout = setInterval( function ()
