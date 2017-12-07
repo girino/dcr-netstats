@@ -185,6 +185,8 @@ var connect = function() {
 	      updateSupply(result);
 	    } else if (result && data.id && data.id == 'getticketpoolvalue' ) {
 	      updateLocked(result);
+	    } else if (result && data.id && data.id == 'ticketfeeinfo' ) {
+	      ;  // for now just ignore it
 	    } else {
 		console.log(result);
 		console.log(data);
@@ -302,6 +304,12 @@ function addNewBlock (block) {
 			}
 		});
 
+	// and to calculate average fees...
+	ws.send('{"jsonrpc":"1.0","id":"ticketfeeinfo","method":"ticketfeeinfo","params":[1]}', function(err) {
+			if (err) {
+				console.log('Socket error: ' + err);
+			}
+		});
 }
 
 function updateSupply (data) {
